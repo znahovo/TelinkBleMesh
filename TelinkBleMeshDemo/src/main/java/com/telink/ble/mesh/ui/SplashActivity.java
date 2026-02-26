@@ -182,7 +182,7 @@ private void requestBluetoothPermissions() {
 
     if (scanGranted && connectGranted) {
         // 已授權，直接開始掃描
-        startBleScan();  // 你的掃描方法
+        // startBleScan();  // 你的掃描方法
     } else {
         // 請求權限
         ActivityCompat.requestPermissions(this, BLE_PERMISSIONS, REQUEST_CODE_BLE);
@@ -206,7 +206,7 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String[] permis
         }
 
         if (allGranted) {
-            startBleScan();  // 開始掃描
+            // startBleScan();  // 開始掃描
         } else {
             // 你的原有拒絕邏輯，但可以改提示文字更準確
             if (settingDialog == null) {
