@@ -144,24 +144,87 @@ public class SplashActivity extends BaseActivity {
         delayHandler.removeCallbacksAndMessages(null);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSIONS_REQUEST_ALL) {
-            boolean pass = true;
-            for (int result : grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    pass = false;
-                    break;
-                }
-            }
-            if (pass) {
-                onPermissionChecked();
-            } else {
-                onPermissionDenied();
-                toastMsg("Permission Denied");
+    private static final int REQUEST_CODE_BLE = 1001;
+
+    // 需要請求的權限（Android 12+ 只需這兩個）
+    private static final String[] BLE_PERMISSIONS = {
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT
+    };
+
+    
+    // 在你要開始掃描前呼叫這個方法
+private void requestBluetoothPermissions() {
+    // 先檢查位置服務是否開啟（Android 所有版本藍牙 LE 掃描都需要位置服務開啟）
+    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    boolean locationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                              locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+    if (!locationEnabled) {
+        // 提示開啟位置服務
+        new AlertDialog.Builder(this)
+            .setTitle("位置服務未開啟")
+            .setMessage("藍牙掃描需要開啟位置服務（Location Services），即使不使用 GPS 定位。")
+            .setPositiveButton("前往設定", (dialog, which) -> {
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            })
+            .setNegativeButton("取消", (dialog, which) -> finish())
+            .setCancelable(false)
+            .show();
+        return;
+    }
+
+    // 檢查藍牙權限
+    boolean scanGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+    boolean connectGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+
+    if (scanGranted && connectGranted) {
+        // 已授權，直接開始掃描
+        startBleScan();  // 你的掃描方法
+    } else {
+        // 請求權限
+        ActivityCompat.requestPermissions(this, BLE_PERMISSIONS, REQUEST_CODE_BLE);
+    }
+}
+
+
+
+// 權限回調
+@Override
+public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    if (requestCode == REQUEST_CODE_BLE) {
+        boolean allGranted = true;
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                allGranted = false;
+                break;
             }
         }
+
+        if (allGranted) {
+            startBleScan();  // 開始掃描
+        } else {
+            // 你的原有拒絕邏輯，但可以改提示文字更準確
+            if (settingDialog == null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setCancelable(false);
+                builder.setTitle("權限必要");
+                builder.setMessage("需要「附近裝置」（Nearby devices）權限才能搜尋藍牙設備。\n\n請在設定中授予權限。");
+                builder.setPositiveButton("前往設定", (dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                });
+                builder.setNegativeButton("取消", (dialog, which) -> {
+                    dialog.dismiss();
+                    finish();
+                });
+                settingDialog = builder.create();
+            }
+            settingDialog.show();
+        }
     }
+}
 
 }

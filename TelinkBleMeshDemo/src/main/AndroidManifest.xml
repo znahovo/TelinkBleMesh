@@ -15,7 +15,7 @@
          You must add an attribute to this permission, or declare the
          ACCESS_FINE_LOCATION permission, depending on the results when you
          check location usage in your app. -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
 
     <!-- Needed only if your app makes the device discoverable to Bluetooth
          devices. -->
@@ -25,8 +25,12 @@
          devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission
+    android:name="android.permission.ACCESS_FINE_LOCATION"
+    android:maxSdkVersion="30" />  <!-- 只在 Android 11 及以下需要 -->
+    <uses-permission
+    android:name="android.permission.ACCESS_COARSE_LOCATION"
+    android:maxSdkVersion="30" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
