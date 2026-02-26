@@ -37,7 +37,8 @@ import androidx.core.content.ContextCompat;
 
 import com.telink.ble.mesh.demo.R;
 import com.telink.ble.mesh.util.MeshLogger;
-
+import android.location.LocationManager;
+import android.content.Context;
 
 /**
  * splash page
@@ -75,6 +76,7 @@ public class SplashActivity extends BaseActivity {
         if (settingDialog != null) {
             settingDialog.dismiss();
         }
+        requestBluetoothPermissions();
     // Accept either FINE or COARSE location because on Android 12+ users may grant approximate location
     boolean locationGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
